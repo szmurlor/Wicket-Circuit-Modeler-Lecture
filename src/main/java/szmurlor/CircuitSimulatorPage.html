@@ -1,32 +1,10 @@
-<wicket:head>
-    <script src="js/cs.js"></script>
-</wicket:head>
 <wicket:extend>
         <div class="row">
             <h1>Circuit Simulator v0.1Alpha</h1>
         </div>
         <div class="row">
-            <div class="col-md-8">
-                <p>
-                    <a href="#">(Select)</a>
-                    <a href="#">(Resistor)</a>
-                </p>
-                <canvas id="schemat" width="600px" height="500"></canvas>
-
-            </div>
-            <div class="col-md-4">
-                <address>
-                    <strong>Politechnika Warszawska</strong><br/>
-                    ul. Koszykowa 75<br/>
-                    00-662 Warszawa<br/>
-                    <abbr title="Phone">Tel:</abbr> (22) 234 7614
-                </address>
-
-                <adress>
-                    <strong>Robert Szmurło</strong>
-                    <a href="mailto:#">robert.szmurlo@ee.pw.edu.pl.gov</a>
-                </adress>
-            </div>
+            <div class="col-md-8" wicket:id="simulator"> </div>
+            <div class="col-md-4" wicket:id="address"> </div>
         </div>
 </wicket:extend>
 

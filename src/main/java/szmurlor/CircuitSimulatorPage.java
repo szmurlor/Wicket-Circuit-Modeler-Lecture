@@ -11,6 +11,8 @@ import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import szmurlor.panels.AddressPanel;
+import szmurlor.panels.CircuitSimulatorPanel;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -21,5 +23,8 @@ public class CircuitSimulatorPage extends BasePage {
 
     public CircuitSimulatorPage(final PageParameters parameters) {
 		super(parameters);
+
+        add( new AddressPanel("address") );
+        add( new CircuitSimulatorPanel("simulator"));
     }
 }

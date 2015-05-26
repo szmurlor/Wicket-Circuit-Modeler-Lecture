@@ -12,6 +12,7 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.WebPage;
+import szmurlor.panels.AddressPanel;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -25,6 +26,8 @@ public class HomePage extends BasePage {
 
     public HomePage(final PageParameters parameters) {
 		super(parameters);
+
+        add( new AddressPanel("adr") );
 
 		add(new Label("welcomeText",
                         new LoadableDetachableModel<String>() {
@@ -47,7 +50,7 @@ public class HomePage extends BasePage {
 
         Form<Void> form;
         add( form = new Form<Void>("form") );
-        form.add( new TextField<String>("samochod", samochodModel = new Model<String>() ));
+        form.add(new TextField<String>("samochod", samochodModel = new Model<String>()));
         form.add( new TextField<String>("marka", markaModel = new Model<String>() ));
         form.add( new Button("cmd") {
             @Override
