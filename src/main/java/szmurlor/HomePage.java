@@ -20,6 +20,7 @@ import java.util.Date;
 public class HomePage extends BasePage {
 	private static final long serialVersionUID = 1L;
     private final Model<String> samochodModel;
+    private final Model<String> markaModel;
     private String odpowiedz = "?";
 
     public HomePage(final PageParameters parameters) {
@@ -47,6 +48,7 @@ public class HomePage extends BasePage {
         Form<Void> form;
         add( form = new Form<Void>("form") );
         form.add( new TextField<String>("samochod", samochodModel = new Model<String>() ));
+        form.add( new TextField<String>("marka", markaModel = new Model<String>() ));
         form.add( new Button("cmd") {
             @Override
             public void onSubmit() {
@@ -54,9 +56,9 @@ public class HomePage extends BasePage {
 
                 //if (samochodModel.getObject() != null && samochodModel.getObject().equals("Maluch")) {
                 if ("Maluch".equalsIgnoreCase(samochodModel.getObject())) {
-                    odpowiedz = "Masz fajny samochód!!!";
+                    odpowiedz = "Masz fajny samochód marki " + markaModel.getObject() + "!!!";
                 } else {
-                    odpowiedz = "Ale bieda....";
+                    odpowiedz = "Ale bieda samochód marki " + markaModel.getObject() + "...?";
                 }
             }
         });
