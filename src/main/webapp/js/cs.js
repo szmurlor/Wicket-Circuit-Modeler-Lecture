@@ -6,8 +6,12 @@ var components = [];
 var MM_SELECT = 1;
 var MM_RESISTOR = 2;
 var MM_CAPACITOR = 3;
+var MM_INDUCTANCE = 4;
 
 var mouseMode = MM_SELECT;
+var lastX;
+var lastY;
+var mouseDown = false;
 
 $(document).ready( function() {
     init();
@@ -15,9 +19,20 @@ $(document).ready( function() {
 
 function init() {
 
+    $('#schemat').mouseleave( function (e) {
+        mouseDown = false;
+    });
+
+    $('#schemat').mouseup( function (e) {
+       mouseDown = false;
+    });
+
     $('#schemat').mousedown( function (e) {
         x = getXFor(e, this);
         y = getYFor(e, this);
+        mouseDown = true;
+        lastX = x;
+        lastY = y;
 
         switch (mouseMode) {
             case MM_RESISTOR:
@@ -31,7 +46,50 @@ function init() {
         }
     } );
 
+    $('#schemat').mousemove( function (e) {
+        x = getXFor(e, this);
+        y = getYFor(e, this);
+
+        if (mouseDown) {
+            dx = x - lastX;
+            dy = y - lastY;
+
+            moveSelectedBy(dx,dy);
+
+            lastX = x;
+            lastY = y;
+
+            redraw();
+        } else {
+            if (mouseMode == MM_SELECT) {
+                hoverTerminals(x, y);
+            }
+        }
+    } );
+
     redraw();
+}
+
+function hoverTerminals(x, y) {
+    components.forEach(function(it) {
+       it.terminals.forEach(function(t){
+           if (t.isInside(x,y))
+               t.hovered = true;
+           else
+               t.hovered = false;
+       });
+    });
+
+    redraw();
+}
+
+function moveSelectedBy(dx,dy) {
+    components.forEach(function(it) {
+       if (it.selected) {
+           it.x = it.x + dx;
+           it.y = it.y + dy;
+       }
+    });
 }
 
 function selectComponent(x,y) {
@@ -90,27 +148,94 @@ function redraw() {
     context.restore();
 }
 
-var Resistor = function(x, y, name) {
-    this.x = x;
-    this.y = y;
-    this.w = 10;
-    this.h = 5;
-    this.name = name;
-    this.selected = false;
+function deleteSelected() {
+    var iselected = null;
+    for (i = 0; i < components.length; i++) {
+        if (components[i].selected) {
+            iselected = i;
+            break;
+        }
+    }
+
+
+    if (iselected != null) {
+        components.splice(iselected, 1);
+    }
+
+    redraw();
 }
 
-Resistor.prototype.isInside = function(x,y) {
+var EComponent = function(x, y, name, w, h) {
+    this.x = x;
+    this.y = y;
+    this.name = name;
+    this.w = w;
+    this.h = h;
+    this.selected = false;
+
+    this.terminals = [];
+}
+
+var Terminal = function(dx, dy, p) {
+    this.dx = dx;
+    this.dy = dy;
+    this.p = p;
+    this.hovered = false;
+}
+
+Terminal.prototype.isInside = function(x,y) {
+    return this.p.x + this.dx - 5 < x && x < this.p.x + this.dx + 5
+        && this.p.y + this.dy - 5 < y && y < this.p.y + this.dy + 5;
+}
+
+Terminal.prototype.paint = function(ctx) {
+    ctx.beginPath();
+    if (this.hovered)
+        ctx.strokeStyle = "blue";
+    else
+        ctx.strokeStyle = "black";
+    ctx.arc(this.p.x + this.dx, this.p.y + this.dy, 2, 0, 2*Math.PI);
+    ctx.stroke();
+    ctx.closePath();
+    if (this.hovered) {
+        ctx.fillStyle = "blue";
+        ctx.fill();
+    }
+}
+
+EComponent.prototype.isInside = function(x,y) {
     return (this.x - this.w < x && x < this.x + this.w && this.y - this.h < y && y < this.y + this.h);
 }
 
+
+EComponent.prototype.paint = function(ctx) {
+    this.terminals.forEach( function(it) {
+        it.paint(ctx);
+    });
+}
+
+var Resistor = function(x, y, name) {
+    EComponent.call(this, x, y, name, 10, 5);
+    this.terminals.push( new Terminal(-10,0, this) );
+    this.terminals.push( new Terminal(10,0, this) );
+}
+Resistor.prototype = Object.create(EComponent.prototype);
+Resistor.constructor = Resistor;
+
 Resistor.prototype.paint = function(ctx) {
-    ctx.beginPath();
+    if (this.selected == true) {
+        ctx.strokeStyle = "red";
+    } else {
+        ctx.strokeStyle = "black";
+    }
+    EComponent.prototype.paint.call(this, ctx);
 
     if (this.selected == true) {
         ctx.strokeStyle = "red";
     } else {
         ctx.strokeStyle = "black";
     }
+    ctx.beginPath();
 
     ox = this.x-this.w;
     oy = this.y-0;

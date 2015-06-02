@@ -2,12 +2,25 @@
 </wicket:head>
 <wicket:panel>
     <p>
-        <a href="#" onclick="mouseMode = MM_SELECT; return false;">(Select)</a>
-        <a href="#" onclick="mouseMode = MM_RESISTOR; return false;">(Resistor)</a>
-        <a href="#" onclick="mouseMode = MM_CAPACITOR; return false;">(Capacitor)</a>
+        <a href="#" id="mm-sel" class="mm" onclick="mouseMode = MM_SELECT; setColor(this); return false;" >(Select)</a>
+        <a href="#" id="mm-res" class="mm" onclick="mouseMode = MM_RESISTOR; setColor(this); return false;">(Resistor)</a>
+        <a href="#" id="mm-cap" class="mm" onclick="mouseMode = MM_CAPACITOR; setColor(this); return false;">(Capacitor)</a>
+        <a href="#" id="mm-ind" class="mm" onclick="mouseMode = MM_INDUCTANCE; setColor(this); return false;">(Inductance)</a>
+        <a class="pull-right" href="#" onclick="deleteSelected(); return false;" >(Delete)</a>
     </p>
     <canvas id="schemat" width="600px" height="500"></canvas>
 
     <script src="js/cs.js?ver=1.0"></script>
+    <script type="text/javascript">
+        function setColor(e) {
+            $(".mm").css('color','#337ab7');
+/*
+            $('#mm-sel').css('color','#337ab7');
+            $('#mm-res').css('color','#337ab7');
+            $('#mm-cap').css('color','#337ab7');
+*/
+            $(e).css('color','red');
+        }
+    </script>
 
 </wicket:panel>
