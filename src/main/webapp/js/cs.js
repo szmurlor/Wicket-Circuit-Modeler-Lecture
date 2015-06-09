@@ -169,7 +169,9 @@ function redraw() {
     context.clearRect(0,0, context.canvas.width, context.canvas.height);
     context.save();
 
-    components.forEach( z);
+    components.forEach( function(it) {
+        it.paint(context);
+    });
 
     if (tmpCon != null)
         tmpCon.paint(context);
@@ -271,9 +273,9 @@ EConnection.prototype.paint = function(ctx) {
     ctx.strokeStyle = (this.tmp == true ? "blue" : "black");
 
     ctx.beginPath();
-    ctx.moveTo( start.getX(), start.getY() );
-    ctx.lineTo( end.getX(), end.getY() );
-    ctx.moveTo( start.getX(), start.getY() );
+    ctx.moveTo( this.start.getX(), this.start.getY() );
+    ctx.lineTo( this.end.getX(), this.end.getY() );
+    ctx.moveTo( this.start.getX(), this.start.getY() );
     ctx.closePath();
 
     ctx.stroke();
