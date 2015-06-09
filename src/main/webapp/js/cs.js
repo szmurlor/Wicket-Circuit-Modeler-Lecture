@@ -12,6 +12,7 @@ var mouseMode = MM_SELECT;
 var lastX;
 var lastY;
 var mouseDown = false;
+var tmpCon = null;
 
 $(document).ready( function() {
     init();
@@ -21,10 +22,12 @@ function init() {
 
     $('#schemat').mouseleave( function (e) {
         mouseDown = false;
+        tmpCon = null;
     });
 
     $('#schemat').mouseup( function (e) {
        mouseDown = false;
+       tmpCon = null;
     });
 
     $('#schemat').mousedown( function (e) {
@@ -40,7 +43,13 @@ function init() {
                 redraw();
                 break;
             case MM_SELECT:
-                selectComponent(x,y);
+                var hovered = findHoveredTerminal();
+
+                if (hovered != null) {
+                    startConnection(hovered);
+                } else {
+                    selectComponent(x, y);
+                }
                 redraw();
                 break;
         }
@@ -51,11 +60,14 @@ function init() {
         y = getYFor(e, this);
 
         if (mouseDown) {
+
             dx = x - lastX;
             dy = y - lastY;
-
-            moveSelectedBy(dx,dy);
-
+            if (tmpCon != null) {
+                tmpCon.end.moveBy(dx, dy);
+            } else {
+                moveSelectedBy(dx, dy);
+            }
             lastX = x;
             lastY = y;
 
@@ -68,6 +80,23 @@ function init() {
     } );
 
     redraw();
+}
+
+function startConnection(startTerminal) {
+    tmpCon = new EConnection(startTerminal, new EmptyComponent(startTerminal.getX(), startTerminal.getY()).getTerminal(0) );
+    redraw();
+}
+
+function findHoveredTerminal() {
+    var hovered = null;
+    components.forEach(function(it) {
+        it.terminals.forEach(function(t){
+            if (t.isInside(x,y))
+                hovered = t;
+        });
+    });
+
+    return hovered;
 }
 
 function hoverTerminals(x, y) {
@@ -140,10 +169,10 @@ function redraw() {
     context.clearRect(0,0, context.canvas.width, context.canvas.height);
     context.save();
 
-    for (var i=0; i < components.length; i++) {
-        var c = components[i];
-        c.paint(context);
-    }
+    components.forEach( z);
+
+    if (tmpCon != null)
+        tmpCon.paint(context);
 
     context.restore();
 }
@@ -188,6 +217,19 @@ Terminal.prototype.isInside = function(x,y) {
         && this.p.y + this.dy - 5 < y && y < this.p.y + this.dy + 5;
 }
 
+Terminal.prototype.getX = function() {
+    return this.p.x + this.dx;
+}
+
+Terminal.prototype.getY = function() {
+    return this.p.y + this.dy;
+}
+
+Terminal.prototype.moveBy = function(dx, dy) {
+    this.p.x = this.p.x + dx;
+    this.p.y = this.p.y + dy;
+}
+
 Terminal.prototype.paint = function(ctx) {
     ctx.beginPath();
     if (this.hovered)
@@ -203,6 +245,10 @@ Terminal.prototype.paint = function(ctx) {
     }
 }
 
+EComponent.prototype.getTerminal = function(i) {
+    return this.terminals[i];
+}
+
 EComponent.prototype.isInside = function(x,y) {
     return (this.x - this.w < x && x < this.x + this.w && this.y - this.h < y && y < this.y + this.h);
 }
@@ -214,6 +260,27 @@ EComponent.prototype.paint = function(ctx) {
     });
 }
 
+var EConnection = function( start, end ) {
+    this.start = start;
+    this.end = end;
+    this.tmp = false;
+}
+
+EConnection.prototype.paint = function(ctx) {
+    ctx.save();
+    ctx.strokeStyle = (this.tmp == true ? "blue" : "black");
+
+    ctx.beginPath();
+    ctx.moveTo( start.getX(), start.getY() );
+    ctx.lineTo( end.getX(), end.getY() );
+    ctx.moveTo( start.getX(), start.getY() );
+    ctx.closePath();
+
+    ctx.stroke();
+    ctx.restore();
+}
+
+
 var Resistor = function(x, y, name) {
     EComponent.call(this, x, y, name, 10, 5);
     this.terminals.push( new Terminal(-10,0, this) );
@@ -223,11 +290,6 @@ Resistor.prototype = Object.create(EComponent.prototype);
 Resistor.constructor = Resistor;
 
 Resistor.prototype.paint = function(ctx) {
-    if (this.selected == true) {
-        ctx.strokeStyle = "red";
-    } else {
-        ctx.strokeStyle = "black";
-    }
     EComponent.prototype.paint.call(this, ctx);
 
     if (this.selected == true) {
@@ -252,11 +314,13 @@ Resistor.prototype.paint = function(ctx) {
     ctx.moveTo(ox,oy);
     ctx.closePath();
     ctx.stroke();
-/*
-    if (this.selected == true) {
-        ctx.fillStyle = "red";
-        ctx.fill();
-    }
-*/
 
 }
+
+
+var EmptyComponent = function(x, y, name) {
+    EComponent.call(this, x, y, name, 3, 3);
+    this.terminals.push( new Terminal(0,0, this) );
+}
+EmptyComponent.prototype = Object.create(EComponent.prototype);
+EmptyComponent.constructor = EmptyComponent;
