@@ -3,6 +3,7 @@
  */
 
 var components = [];
+var connections = [];
 var MM_SELECT = 1;
 var MM_RESISTOR = 2;
 var MM_CAPACITOR = 3;
@@ -23,11 +24,21 @@ function init() {
     $('#schemat').mouseleave( function (e) {
         mouseDown = false;
         tmpCon = null;
+
+        redraw();
     });
 
     $('#schemat').mouseup( function (e) {
-       mouseDown = false;
-       tmpCon = null;
+        if (tmpCon != null) {
+            var hovered = findHoveredTerminal();
+            if (hovered != null) {
+                tmpCon.end = hovered;
+                connections.push(tmpCon);
+            }
+        }
+        mouseDown = false;
+        tmpCon = null;
+        redraw();
     });
 
     $('#schemat').mousedown( function (e) {
@@ -72,10 +83,9 @@ function init() {
             lastY = y;
 
             redraw();
-        } else {
-            if (mouseMode == MM_SELECT) {
-                hoverTerminals(x, y);
-            }
+        }
+        if (mouseMode == MM_SELECT) {
+            hoverTerminals(x, y);
         }
     } );
 
@@ -175,6 +185,10 @@ function redraw() {
 
     if (tmpCon != null)
         tmpCon.paint(context);
+
+    connections.forEach( function (c) {
+        c.paint(context);
+    })
 
     context.restore();
 }
